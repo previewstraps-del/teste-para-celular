@@ -93,25 +93,6 @@ window.mostrarBreeders = (event) => {
    NAV
 ===================================================== */
  
-// ── MENU MOBILE ──────────────────────────────────────────
-window.toggleMobileMenu = () => {
-  const btn  = document.getElementById('nav-hamburger');
-  const menu = document.getElementById('nav-mobile-menu');
-  if (!btn || !menu) return;
-  btn.classList.toggle('open');
-  menu.classList.toggle('open');
-};
- 
-document.addEventListener('click', (e) => {
-  const menu = document.getElementById('nav-mobile-menu');
-  const btn  = document.getElementById('nav-hamburger');
-  if (!menu || !btn) return;
-  if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.classList.remove('open');
-    btn.classList.remove('open');
-  }
-});
- 
 export function renderNav(activeLink = '') {
  
   const links = [
@@ -207,18 +188,7 @@ export function renderNav(activeLink = '') {
  
       <div class="nav-right" id="auth-nav-btn"></div>
  
-      <!-- HAMBÚRGUER -->
-      <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
     </nav>
- 
-    <!-- MENU MOBILE -->
-    <div class="nav-mobile-menu" id="nav-mobile-menu">
-      <ul class="nav-mobile-links" id="nav-mobile-links">
-        ${navItems}
-      </ul>
-    </div>
  
     <!-- MODAL LOGIN/REGISTER COM GOOGLE -->
     <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
@@ -882,4 +852,3 @@ export function initAuth() {
   });
  
 }
- 
