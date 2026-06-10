@@ -380,10 +380,11 @@ footer span2 { color: var(--gold); }
 /* Tablet e abaixo */
 @media (max-width: 768px) {
  
-  /* NAV — esconde links centrais, mostra hambúrguer */
-  .nav-center { display: none !important; }
-  .nav-hamburger { display: flex; }
-  nav { padding: 0 1rem; }
+  /* NAV — links visíveis, menores */
+  nav { padding: 0 0.5rem; height: auto; min-height: 60px; flex-wrap: wrap; gap: 0.3rem; }
+  .nav-center { flex-wrap: wrap; gap: 0.2rem; }
+  .nav-center li a { font-size: 0.72rem; padding: 0.2rem 0.35rem; letter-spacing: 0; }
+  .nav-logo h2 { font-size: 1rem; }
   .topbar { padding: 0.4rem 1rem; font-size: 0.72rem; }
  
   /* HERO */
@@ -509,5 +510,3 @@ footer span2 { color: var(--gold); }
 .social-btn--youtube   { background: #ac0505; }
 .social-btn--facebook   { background: #006eff; }
 .social-btn--twitter   { background: #000000; }
- 
- 
