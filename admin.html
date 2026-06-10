@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Administrativo – PhenoBrasil</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d0d; --bg2: #141414; --bg3: #1c1c1c;
+  --border: #2a2a2a; --gold: #c9a84c; --green: #3a7d44;
+  --green2: #4caf50; --white: #f0ede8; --muted: #888; --red: #e05252;
+}
+body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+ 
+/* NAV */
+nav { background: #070707; border-bottom: 1px solid var(--border); border-top: 3px solid var(--red); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.nav-logo h2 { font-family: 'Barlow Condensed'; font-weight: 800; letter-spacing: 1px; }
+.nav-actions { display: flex; align-items: center; gap: 1rem; }
+.nav-link-btn { background: transparent; border: 1px solid var(--border); color: var(--white); padding: 0.5rem 1rem; cursor: pointer; font-family: 'Barlow Condensed'; font-weight: 700; text-transform: uppercase; text-decoration: none; font-size: 0.9rem; border-radius: 2px; transition: all 0.2s; }
+.nav-link-btn:hover { border-color: var(--gold); color: var(--gold); }
+.logout-btn { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 0.5rem 1rem; cursor: pointer; font-family: 'Barlow Condensed'; font-weight: 700; text-transform: uppercase; transition: all 0.2s; border-radius: 2px; }
+.logout-btn:hover { background: var(--red); color: #fff; }
+ 
+.admin-container { max-width: 1300px; margin: 2rem auto; padding: 0 2rem; }
+ 
+/* GRID USUÁRIOS */
+.users-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+@media (max-width: 900px) { .users-grid { grid-template-columns: 1fr; } }
+ 
+/* CARD BOX */
+.card-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); }
+.card-header h3 { font-family: 'Barlow Condensed'; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--gold); }
+.btn-add { background: var(--green); color: #fff; border: none; padding: 0.4rem 1rem; font-family: 'Barlow Condensed'; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+.btn-add:hover { background: var(--green2); }
+ 
+/* PAINEL INLINE DE ADICIONAR */
+.add-panel { display: none; padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg3); }
+.add-panel.visible { display: block; }
+.add-panel h4 { font-family: 'Barlow Condensed'; font-size: 1rem; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.form-group { margin-bottom: 0.8rem; }
+.form-group label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+.form-group input { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--white); padding: 0.6rem 1rem; font-size: 0.9rem; outline: none; border-radius: 2px; font-family: 'Barlow'; }
+.form-group input:focus { border-color: var(--gold); }
+.form-row-btns { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+.btn-submit-form { background: var(--green); color: #fff; border: none; padding: 0.6rem 1.2rem; font-family: 'Barlow Condensed'; font-weight: 700; text-transform: uppercase; cursor: pointer; border-radius: 2px; font-size: 0.9rem; }
+.btn-submit-form:hover { background: var(--green2); }
+.btn-cancel-panel { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 0.6rem 1rem; font-family: 'Barlow Condensed'; font-weight: 700; text-transform: uppercase; cursor: pointer; border-radius: 2px; font-size: 0.9rem; }
+ 
+/* LISTA USUÁRIOS */
+.users-list { padding: 1rem 1.5rem; max-height: 400px; overflow-y: auto; }
+.user-item { background: var(--bg3); border: 1px solid var(--border); padding: 0.8rem 1rem; border-radius: 2px; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.8rem; }
+.user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); background: #222; flex-shrink: 0; }
+.user-info { flex: 1; min-width: 0; }
+.user-info h4 { font-size: 0.9rem; font-weight: 700; color: var(--white); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-info p { font-size: 0.78rem; color: var(--muted); }
+.user-controls { display: flex; gap: 0.4rem; flex-shrink: 0; }
+.btn-action { border: none; padding: 0.3rem 0.6rem; font-family: 'Barlow Condensed'; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; cursor: pointer; border-radius: 2px; }
+.btn-edit   { background: var(--gold); color: #000; }
+.btn-delete { background: var(--red);  color: #fff; }
+ 
+/* SEÇÕES COLAPSÁVEIS */
+.section-collapsible { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 2rem; overflow: hidden; }
+.section-toggle { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; cursor: pointer; user-select: none; transition: background 0.2s; }
+.section-toggle:hover { background: var(--bg3); }
+.section-toggle h3 { font-family: 'Barlow Condensed'; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--gold); }
+.section-toggle-right { display: flex; align-items: center; gap: 1rem; }
+.section-count { font-size: 0.8rem; color: var(--muted); font-family: 'Barlow Condensed'; }
+.toggle-arrow { color: var(--muted); font-size: 0.75rem; transition: transform 0.2s; }
+.section-collapsible.open .toggle-arrow { transform: rotate(180deg); }
+.section-body { display: none; border-top: 1px solid var(--border); }
+.section-collapsible.open .section-body { display: block; }
+ 
+/* TOOLBAR DE BUSCA */
+.section-toolbar { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg3); flex-wrap: wrap; }
+.search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 2px; padding: 0.4rem 0.8rem; flex: 1; min-width: 200px; }
+.search-wrap:focus-within { border-color: var(--gold); }
+.search-wrap input { background: none; border: none; color: var(--white); font-family: 'Barlow'; font-size: 0.9rem; outline: none; width: 100%; }
+.search-wrap span { color: var(--muted); font-size: 0.9rem; }
+ 
+/* TABELA */
+.table-wrap { overflow-x: auto; }
+.admin-table { width: 100%; border-collapse: collapse; }
+.admin-table th { font-family: 'Barlow Condensed'; font-weight: 700; text-transform: uppercase; color: var(--muted); padding: 0.8rem 1rem; border-bottom: 2px solid var(--border); font-size: 0.9rem; white-space: nowrap; cursor: pointer; user-select: none; }
+.admin-table th:hover { color: var(--gold); }
+.admin-table th.sorted-asc::after  { content: ' ▲'; color: var(--gold); }
+.admin-table th.sorted-desc::after { content: ' ▼'; color: var(--gold); }
+.admin-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.88rem; vertical-align: middle; }
+.admin-table tr:hover td { background: var(--bg3); }
+.badge { padding: 0.2rem 0.6rem; font-size: 0.72rem; border-radius: 2px; font-family: 'Barlow Condensed'; font-weight: 700; text-transform: uppercase; }
+.badge-breeder  { background: #222; color: var(--white); border: 1px solid var(--border); }
+.badge-pendente { background: #3a2a00; color: #f0a500; }
+.badge-confirmado { background: #002a10; color: #00cc66; }
+.badge-cancelado { background: #2a0000; color: var(--red); }
+.action-group { display: flex; gap: 0.4rem; }
+ 
+/* PEDIDOS ACCORDION */
+.pedido-row { cursor: pointer; }
+.pedido-row:hover td { background: var(--bg3); }
+.pedido-detail-row { display: none; }
+.pedido-detail-row.open { display: table-row; }
+.pedido-detail-cell { background: var(--bg3); padding: 1rem 1.5rem; }
+.pedido-items-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.pedido-item { display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; }
+.pedido-item img { width: 36px; height: 36px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border); }
+.status-select { background: var(--bg2); border: 1px solid var(--border); color: var(--white); padding: 0.35rem 0.6rem; font-family: 'Barlow Condensed'; font-size: 0.85rem; border-radius: 2px; cursor: pointer; }
+.status-select:focus { border-color: var(--gold); outline: none; }
+ 
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-top: 3px solid var(--gold); width: 100%; max-width: 420px; padding: 2rem; position: relative; border-radius: 4px; }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.3rem; cursor: pointer; }
+.modal h3 { font-family: 'Barlow Condensed'; font-size: 1.4rem; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="nav-logo"><h2>PAINEL <span style="color:var(--red)">ADMINISTRATIVO</span></h2></div>
+  <div class="nav-actions">
+    <a href="index.html" class="nav-link-btn">🏠 Ir para Loja</a>
+    <button class="logout-btn" onclick="window.fazerLogout()">Sair</button>
+  </div>
+</nav>
+ 
+<div class="admin-container">
+ 
+  <!-- BREEDERS E VENDEDORES -->
+  <div class="users-grid">
+ 
+    <!-- BREEDERS -->
+    <div class="card-box">
+      <div class="card-header">
+        <h3>Breeders Cadastrados</h3>
+        <button class="btn-add" onclick="togglePanel('panel-breeder')">+ Adicionar Breeder</button>
+      </div>
+      <div class="add-panel" id="panel-breeder">
+        <h4>Novo Breeder</h4>
+        <form onsubmit="window.adicionarBreederNovo(event)">
+          <div class="form-group"><label>Nome</label><input type="text" id="new-breeder-name" placeholder="Ex: Pheno Genetics" required></div>
+          <div class="form-group"><label>E-mail</label><input type="email" id="new-breeder-email" placeholder="breeder@email.com" required></div>
+          <div class="form-group"><label>Foto (URL) — opcional</label><input type="text" id="new-breeder-photo" placeholder="https://..."></div>
+          <div class="form-row-btns">
+            <button type="submit" class="btn-submit-form">Cadastrar</button>
+            <button type="button" class="btn-cancel-panel" onclick="togglePanel('panel-breeder')">Cancelar</button>
+          </div>
+        </form>
+      </div>
+      <div class="users-list" id="master-users-list"><p style="color:var(--muted)">Carregando...</p></div>
+    </div>
+ 
+    <!-- VENDEDORES -->
+    <div class="card-box">
+      <div class="card-header">
+        <h3>Vendedores Cadastrados</h3>
+        <button class="btn-add" onclick="togglePanel('panel-vendedor')">+ Adicionar Vendedor</button>
+      </div>
+      <div class="add-panel" id="panel-vendedor">
+        <h4>Novo Vendedor</h4>
+        <form onsubmit="window.adicionarVendedorNovo(event)">
+          <div class="form-group"><label>Nome</label><input type="text" id="new-vendedor-name" placeholder="Ex: João Silva" required></div>
+          <div class="form-group"><label>E-mail</label><input type="email" id="new-vendedor-email" placeholder="vendedor@email.com" required></div>
+          <div class="form-row-btns">
+            <button type="submit" class="btn-submit-form">Cadastrar</button>
+            <button type="button" class="btn-cancel-panel" onclick="togglePanel('panel-vendedor')">Cancelar</button>
+          </div>
+        </form>
+      </div>
+      <div class="users-list" id="master-vendedores-list"><p style="color:var(--muted)">Carregando...</p></div>
+    </div>
+ 
+  </div>
+ 
+  <!-- MODERAÇÃO GENÉTICAS -->
+  <div class="section-collapsible" id="sec-geneticas">
+    <div class="section-toggle" onclick="toggleSection('sec-geneticas')">
+      <h3>🌿 Moderação de Genéticas</h3>
+      <div class="section-toggle-right">
+        <span class="section-count" id="count-geneticas"></span>
+        <span class="toggle-arrow">▼</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="section-toolbar">
+        <div class="search-wrap">
+          <span>🔍</span>
+          <input type="text" id="search-geneticas" placeholder="Buscar por nome ou breeder..." oninput="filtrarTabela('geneticas')">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th onclick="ordenarTabela('geneticas','name')">Nome</th>
+              <th onclick="ordenarTabela('geneticas','breederNome')">Breeder</th>
+              <th onclick="ordenarTabela('geneticas','price')">Preço</th>
+              <th onclick="ordenarTabela('geneticas','estoque')">Estoque</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-geneticas"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:2rem">Abra a seção para carregar</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- MODERAÇÃO PRODUTOS -->
+  <div class="section-collapsible" id="sec-produtos">
+    <div class="section-toggle" onclick="toggleSection('sec-produtos')">
+      <h3>🛍️ Moderação de Produtos da Loja</h3>
+      <div class="section-toggle-right">
+        <span class="section-count" id="count-produtos"></span>
+        <span class="toggle-arrow">▼</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="section-toolbar">
+        <div class="search-wrap">
+          <span>🔍</span>
+          <input type="text" id="search-produtos" placeholder="Buscar por nome ou vendedor..." oninput="filtrarTabela('produtos')">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th onclick="ordenarTabela('produtos','name')">Nome</th>
+              <th onclick="ordenarTabela('produtos','vendedorNome')">Vendedor</th>
+              <th onclick="ordenarTabela('produtos','categoria')">Categoria</th>
+              <th onclick="ordenarTabela('produtos','price')">Preço</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-produtos"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:2rem">Abra a seção para carregar</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- PEDIDOS -->
+  <div class="section-collapsible" id="sec-pedidos">
+    <div class="section-toggle" onclick="toggleSection('sec-pedidos')">
+      <h3>📦 Pedidos</h3>
+      <div class="section-toggle-right">
+        <span class="section-count" id="count-pedidos"></span>
+        <span class="toggle-arrow">▼</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="section-toolbar">
+        <div class="search-wrap">
+          <span>🔍</span>
+          <input type="text" id="search-pedidos" placeholder="Buscar por ID, email ou status..." oninput="filtrarTabela('pedidos')">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Pedido</th>
+              <th onclick="ordenarTabela('pedidos','userEmail')">Cliente</th>
+              <th onclick="ordenarTabela('pedidos','total')">Total</th>
+              <th onclick="ordenarTabela('pedidos','criadoEm')">Data</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-pedidos"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:2rem">Abra a seção para carregar</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+ 
+</div>
+ 
+<!-- MODAL EDIÇÃO BREEDER -->
+<div class="modal-overlay" id="edit-user-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('edit-user-modal')">&times;</button>
+    <h3>Editar Breeder</h3>
+    <form onsubmit="window.salvarEdicaoUsuario(event)">
+      <input type="hidden" id="edit-uid">
+      <div class="form-group"><label>Nome</label><input type="text" id="edit-name" required></div>
+      <div class="form-group"><label>E-mail</label><input type="email" id="edit-email" required></div>
+      <div class="form-group"><label>Foto (URL)</label><input type="text" id="edit-photo"></div>
+      <div class="form-row-btns">
+        <button type="submit" class="btn-submit-form">Salvar</button>
+        <button type="button" class="btn-cancel-panel" onclick="fecharModal('edit-user-modal')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<!-- MODAL EDIÇÃO VENDEDOR -->
+<div class="modal-overlay" id="edit-vendedor-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModal('edit-vendedor-modal')">&times;</button>
+    <h3>Editar Vendedor</h3>
+    <form onsubmit="window.salvarEdicaoVendedor(event)">
+      <input type="hidden" id="edit-vendedor-uid">
+      <div class="form-group"><label>Nome</label><input type="text" id="edit-vendedor-name" required></div>
+      <div class="form-group"><label>E-mail</label><input type="email" id="edit-vendedor-email" required></div>
+      <div class="form-row-btns">
+        <button type="submit" class="btn-submit-form">Salvar</button>
+        <button type="button" class="btn-cancel-panel" onclick="fecharModal('edit-vendedor-modal')">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc, setDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+ 
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJTlL-4piG67VOM_y480dhyib2qaF3Bso",
+    authDomain: "phenobrasil.firebaseapp.com",
+    projectId: "phenobrasil",
+    storageBucket: "phenobrasil.firebasestorage.app",
+    messagingSenderId: "825755980394",
+    appId: "1:825755980394:web:caad888821d128fb133013"
+  };
+ 
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+ 
+  let executandoLogout     = false;
+  let listaUsuariosLocais  = [];
+  let listaVendedoresLocais = [];
+ 
+  // Dados em memória para ordenação/busca
+  const dados = { geneticas: [], produtos: [], pedidos: [] };
+  const ordemAtual = { geneticas: {}, produtos: {}, pedidos: {} };
+  const carregado  = { geneticas: false, produtos: false, pedidos: false };
+ 
+  // ── UI HELPERS ────────────────────────────────────────────
+  window.togglePanel = (id) => {
+    document.getElementById(id)?.classList.toggle('visible');
+  };
+ 
+  window.toggleSection = (id) => {
+    const sec = document.getElementById(id);
+    sec.classList.toggle('open');
+    const key = id.replace('sec-', '');
+    if (sec.classList.contains('open') && !carregado[key]) {
+      if (key === 'geneticas') window.carregarTodasStrains();
+      if (key === 'produtos')  window.carregarTodosProdutos();
+      if (key === 'pedidos')   window.carregarTodosPedidos();
+    }
+  };
+ 
+  window.fecharModal = (id) => document.getElementById(id).classList.remove('open');
+ 
+  // ── AUTH ─────────────────────────────────────────────────
+  onAuthStateChanged(auth, async (user) => {
+    if (user && user.email === 'admin@phenobrasil.com') {
+      window.carregarTodosBreeders();
+      window.carregarTodosVendedores();
+    } else if (user) {
+      alert("Acesso negado.");
+      location.href = 'index.html';
+    } else {
+      if (!executandoLogout) location.href = 'index.html';
+    }
+  });
+ 
+  window.fazerLogout = async () => {
+    try { executandoLogout = true; await signOut(auth); location.href = 'index.html'; }
+    catch (_) { executandoLogout = false; }
+  };
+ 
+  // ── ORDENAÇÃO E BUSCA ─────────────────────────────────────
+  window.ordenarTabela = (tipo, campo) => {
+    const ord = ordemAtual[tipo];
+    ord.campo = campo;
+    ord.asc   = ord.campo === campo ? !ord.asc : true;
+    ordemAtual[tipo] = { campo, asc: ord.asc };
+    renderTabela(tipo);
+ 
+    // Atualiza classes dos th
+    document.querySelectorAll(`#tbody-${tipo}`).forEach(() => {});
+    document.querySelectorAll(`[onclick*="ordenarTabela('${tipo}'"]`).forEach(th => {
+      th.classList.remove('sorted-asc', 'sorted-desc');
+      if (th.getAttribute('onclick').includes(`'${campo}'`)) {
+        th.classList.add(ord.asc ? 'sorted-asc' : 'sorted-desc');
+      }
+    });
+  };
+ 
+  window.filtrarTabela = (tipo) => renderTabela(tipo);
+ 
+  const getFiltrado = (tipo) => {
+    const busca = document.getElementById(`search-${tipo}`)?.value.toLowerCase() || '';
+    return dados[tipo].filter(d => JSON.stringify(d).toLowerCase().includes(busca));
+  };
+ 
+  const renderTabela = (tipo) => {
+    let lista = getFiltrado(tipo);
+    const ord = ordemAtual[tipo];
+    if (ord.campo) {
+      lista = [...lista].sort((a, b) => {
+        let va = a[ord.campo] ?? '';
+        let vb = b[ord.campo] ?? '';
+        if (typeof va === 'string') va = va.toLowerCase();
+        if (typeof vb === 'string') vb = vb.toLowerCase();
+        return ord.asc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+      });
+    }
+    if (tipo === 'geneticas') renderGenéticasTabela(lista);
+    if (tipo === 'produtos')  renderProdutosTabela(lista);
+    if (tipo === 'pedidos')   renderPedidosTabela(lista);
+  };
+ 
+  // ── GENÉTICAS ─────────────────────────────────────────────
+  window.carregarTodasStrains = async () => {
+    const tbody = document.getElementById('tbody-geneticas');
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:2rem">Carregando...</td></tr>';
+    try {
+      const [usersSnap, prodsSnap] = await Promise.all([
+        getDocs(collection(db, "users")),
+        getDocs(collection(db, "products"))
+      ]);
+      const mapaBreeders = {};
+      usersSnap.forEach(d => {
+        const u = d.data();
+        mapaBreeders[d.id] = u.name || u.email || '—';
+        if (u.email) mapaBreeders[u.email.toLowerCase()] = u.name || u.email;
+      });
+ 
+      dados.geneticas = prodsSnap.docs.map(d => {
+        const p = d.data();
+        return { id: d.id, ...p,
+          breederNome: mapaBreeders[p.breederUid] || mapaBreeders[(p.breederEmail||'').toLowerCase()] || '—'
+        };
+      });
+ 
+      document.getElementById('count-geneticas').textContent = `${dados.geneticas.length} genéticas`;
+      carregado.geneticas = true;
+      renderTabela('geneticas');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center">${e.message}</td></tr>`;
+    }
+  };
+ 
+  const renderGenéticasTabela = (lista) => {
+    const tbody = document.getElementById('tbody-geneticas');
+    if (!lista.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:2rem">Nenhuma genética encontrada.</td></tr>'; return; }
+    tbody.innerHTML = lista.map(p => `
+      <tr>
+        <td style="font-weight:600;text-transform:uppercase">${p.name}</td>
+        <td><span class="badge badge-breeder">${p.breederNome}</span></td>
+        <td style="color:var(--gold);font-weight:700">R$ ${(p.price||0).toFixed(2).replace('.',',')}</td>
+        <td style="color:${p.estoque===0?'var(--red)':p.estoque<=3?'var(--gold)':'var(--green2)'}">${p.estoque !== undefined ? p.estoque : '—'}</td>
+        <td><span class="badge badge-${p.status||'ativo'}">${p.status||'ativo'}</span></td>
+        <td><div class="action-group">
+          <button class="btn-action btn-delete" onclick="window.deletarStrain('${p.id}')">Excluir</button>
+        </div></td>
+      </tr>`).join('');
+  };
+ 
+  window.deletarStrain = async (id) => {
+    if (!confirm("Apagar esta genética permanentemente?")) return;
+    try {
+      await deleteDoc(doc(db, "products", id));
+      dados.geneticas = dados.geneticas.filter(p => p.id !== id);
+      document.getElementById('count-geneticas').textContent = `${dados.geneticas.length} genéticas`;
+      renderTabela('geneticas');
+    } catch (e) { alert("Erro: " + e.message); }
+  };
+ 
+  // ── PRODUTOS DA LOJA ──────────────────────────────────────
+  window.carregarTodosProdutos = async () => {
+    const tbody = document.getElementById('tbody-produtos');
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:2rem">Carregando...</td></tr>';
+    try {
+      const [usersSnap, prodsSnap] = await Promise.all([
+        getDocs(collection(db, "users")),
+        getDocs(collection(db, "loja_produtos"))
+      ]);
+      const mapaVendedores = {};
+      usersSnap.forEach(d => { mapaVendedores[d.id] = d.data().name || d.data().email || '—'; });
+ 
+      dados.produtos = prodsSnap.docs.map(d => ({
+        id: d.id, ...d.data(),
+        vendedorNome: mapaVendedores[d.data().vendedorUid] || d.data().vendedorEmail || '—'
+      }));
+ 
+      document.getElementById('count-produtos').textContent = `${dados.produtos.length} produtos`;
+      carregado.produtos = true;
+      renderTabela('produtos');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="5" style="color:var(--red);text-align:center">${e.message}</td></tr>`;
+    }
+  };
+ 
+  const renderProdutosTabela = (lista) => {
+    const tbody = document.getElementById('tbody-produtos');
+    if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:2rem">Nenhum produto encontrado.</td></tr>'; return; }
+    tbody.innerHTML = lista.map(p => `
+      <tr>
+        <td style="font-weight:600;text-transform:uppercase">${p.name}</td>
+        <td>${p.vendedorNome}</td>
+        <td>${p.categoria || '—'}</td>
+        <td style="color:var(--gold);font-weight:700">R$ ${(p.price||0).toFixed(2).replace('.',',')}</td>
+        <td><div class="action-group">
+          <button class="btn-action btn-delete" onclick="window.deletarProduto('${p.id}')">Excluir</button>
+        </div></td>
+      </tr>`).join('');
+  };
+ 
+  window.deletarProduto = async (id) => {
+    if (!confirm("Apagar este produto permanentemente?")) return;
+    try {
+      await deleteDoc(doc(db, "loja_produtos", id));
+      dados.produtos = dados.produtos.filter(p => p.id !== id);
+      document.getElementById('count-produtos').textContent = `${dados.produtos.length} produtos`;
+      renderTabela('produtos');
+    } catch (e) { alert("Erro: " + e.message); }
+  };
+ 
+  // ── PEDIDOS ───────────────────────────────────────────────
+  window.carregarTodosPedidos = async () => {
+    const tbody = document.getElementById('tbody-pedidos');
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:2rem">Carregando...</td></tr>';
+    try {
+      const snap = await getDocs(collection(db, "pedidos"));
+      dados.pedidos = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a,b) => {
+          const ta = a.criadoEm?.toDate?.() || new Date(0);
+          const tb = b.criadoEm?.toDate?.() || new Date(0);
+          return tb - ta;
+        });
+      document.getElementById('count-pedidos').textContent = `${dados.pedidos.length} pedidos`;
+      carregado.pedidos = true;
+      renderTabela('pedidos');
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center">${e.message}</td></tr>`;
+    }
+  };
+ 
+  const renderPedidosTabela = (lista) => {
+    const tbody = document.getElementById('tbody-pedidos');
+    if (!lista.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:2rem">Nenhum pedido encontrado.</td></tr>'; return; }
+ 
+    tbody.innerHTML = '';
+    lista.forEach(p => {
+      const data = p.criadoEm?.toDate ? p.criadoEm.toDate().toLocaleDateString('pt-BR') : '—';
+      const hora = p.criadoEm?.toDate ? p.criadoEm.toDate().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : '';
+      const statusMap = { pendente: 'badge-pendente', confirmado: 'badge-confirmado', cancelado: 'badge-cancelado' };
+      const badgeCls  = statusMap[p.status] || 'badge-pendente';
+ 
+      const itensHtml = (p.itens||[]).map(i => `
+        <div class="pedido-item">
+          ${i.image ? `<img src="${i.image}" alt="">` : ''}
+          <span><strong>${i.name}</strong> — ${i.qty}x · R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}</span>
+        </div>`).join('');
+ 
+      // Linha principal
+      const tr = document.createElement('tr');
+      tr.className = 'pedido-row';
+      tr.innerHTML = `
+        <td><strong>#${p.id.slice(-6).toUpperCase()}</strong></td>
+        <td style="color:var(--muted);font-size:0.82rem">${p.userEmail || '—'}</td>
+        <td style="color:var(--gold);font-weight:700">R$ ${(p.total||0).toFixed(2).replace('.',',')}</td>
+        <td style="font-size:0.82rem">${data} ${hora}</td>
+        <td><span class="badge ${badgeCls}">${p.status||'pendente'}</span></td>
+        <td style="font-size:0.8rem;color:var(--muted)">▼ ver</td>`;
+      tr.onclick = () => detail.classList.toggle('open');
+      tbody.appendChild(tr);
+ 
+      // Linha de detalhe
+      const detail = document.createElement('tr');
+      detail.className = 'pedido-detail-row';
+      detail.innerHTML = `
+        <td class="pedido-detail-cell" colspan="6">
+          <strong style="font-family:'Barlow Condensed';text-transform:uppercase;color:var(--gold)">Itens do Pedido</strong>
+          <div class="pedido-items-list" style="margin-top:0.8rem">${itensHtml}</div>
+          <div style="display:flex;align-items:center;gap:1rem;margin-top:0.8rem;border-top:1px solid var(--border);padding-top:0.8rem">
+            <span style="font-size:0.82rem;color:var(--muted)">Alterar status:</span>
+            <select class="status-select" onchange="window.atualizarStatusPedido('${p.id}', this.value)">
+              <option value="pendente"   ${p.status==='pendente'   ? 'selected':''}>⏳ Pendente</option>
+              <option value="confirmado" ${p.status==='confirmado' ? 'selected':''}>✅ Confirmado</option>
+              <option value="cancelado"  ${p.status==='cancelado'  ? 'selected':''}>❌ Cancelado</option>
+            </select>
+            <span style="font-size:0.82rem;color:var(--muted)">Cliente: <strong style="color:var(--white)">${p.userEmail||'—'}</strong></span>
+            <span style="font-size:0.82rem;color:var(--muted)">Total: <strong style="color:var(--gold)">R$ ${(p.total||0).toFixed(2).replace('.',',')}</strong></span>
+          </div>
+        </td>`;
+      tbody.appendChild(detail);
+    });
+  };
+ 
+  window.atualizarStatusPedido = async (id, novoStatus) => {
+    try {
+      const pedido = dados.pedidos.find(p => p.id === id);
+      const statusAnterior = pedido?.status;
+ 
+      await updateDoc(doc(db, "pedidos", id), { status: novoStatus });
+      if (pedido) pedido.status = novoStatus;
+ 
+      // ── DESCONTO DE ESTOQUE ao confirmar ─────────────────
+      if (novoStatus === 'confirmado' && statusAnterior !== 'confirmado' && pedido?.itens?.length) {
+        const { increment } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        const erros = [];
+ 
+        for (const item of pedido.itens) {
+          // Tenta products primeiro, depois loja_produtos
+          let colecao = 'products';
+          let snap = await getDoc(doc(db, colecao, item.id));
+          if (!snap.exists()) {
+            colecao = 'loja_produtos';
+            snap = await getDoc(doc(db, colecao, item.id));
+          }
+          if (!snap.exists()) { erros.push(`${item.name}: produto não encontrado`); continue; }
+ 
+          const estoqueAtual = snap.data().estoque;
+          if (estoqueAtual === undefined) continue; // sem controle de estoque
+ 
+          const novoEstoque = Math.max(0, estoqueAtual - item.qty);
+          const novoStatusProd = novoEstoque === 0 ? 'esgotado' : snap.data().status || 'ativo';
+ 
+          await updateDoc(doc(db, colecao, item.id), {
+            estoque: novoEstoque,
+            ...(novoEstoque === 0 && { status: 'esgotado' })
+          });
+        }
+ 
+        if (erros.length) console.warn('Estoque — itens com erro:', erros);
+      }
+      // ─────────────────────────────────────────────────────
+ 
+      // Atualiza badge na linha sem re-renderizar tudo
+      const rows = document.querySelectorAll('#tbody-pedidos .pedido-row');
+      rows.forEach(row => {
+        if (row.querySelector('strong')?.textContent === `#${id.slice(-6).toUpperCase()}`) {
+          const badge = row.querySelector('.badge');
+          const map = { pendente: 'badge-pendente', confirmado: 'badge-confirmado', cancelado: 'badge-cancelado' };
+          badge.className = `badge ${map[novoStatus]}`;
+          badge.textContent = novoStatus;
+        }
+      });
+    } catch (e) { alert("Erro ao atualizar status: " + e.message); }
+  };
+ 
+  // ── BREEDERS ──────────────────────────────────────────────
+  window.adicionarBreederNovo = async (e) => {
+    e.preventDefault();
+    const nome  = document.getElementById('new-breeder-name').value.trim();
+    const email = document.getElementById('new-breeder-email').value.trim();
+    const foto  = document.getElementById('new-breeder-photo').value.trim();
+    const senhaPadrao = "Pheno2026!";
+    try {
+      const { initializeApp, getApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+      const { getAuth, createUserWithEmailAndPassword, signOut, signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+      let secondaryApp;
+      try { secondaryApp = getApp("SecondaryRegisterApp"); }
+      catch (_) { secondaryApp = initializeApp(firebaseConfig, "SecondaryRegisterApp"); }
+      const secondaryAuth = getAuth(secondaryApp);
+      try {
+        const cred = await createUserWithEmailAndPassword(secondaryAuth, email, senhaPadrao);
+        const uid  = cred.user.uid;
+        await signOut(secondaryAuth);
+        await setDoc(doc(db, "users", uid), { uid, name: nome, email, photo: foto, role: 'breeder' });
+        alert(`Breeder cadastrado!\nLogin: ${email}\nSenha: ${senhaPadrao}`);
+      } catch (err) {
+        if (err.code === 'auth/email-already-in-use') {
+          const cred = await signInWithEmailAndPassword(secondaryAuth, email, senhaPadrao);
+          const uid  = cred.user.uid;
+          await signOut(secondaryAuth);
+          await setDoc(doc(db, "users", uid), { uid, name: nome, email, photo: foto, role: 'breeder', desativado: false });
+          alert(`Breeder reativado!\nLogin: ${email}\nSenha: ${senhaPadrao}`);
+        } else throw err;
+      }
+      e.target.reset();
+      togglePanel('panel-breeder');
+      window.carregarTodosBreeders();
+    } catch (err) { alert("Erro: " + err.message); }
+  };
+ 
+  window.carregarTodosBreeders = async () => {
+    const container = document.getElementById('master-users-list');
+    try {
+      const snap = await getDocs(query(collection(db, "users"), where("role", "==", "breeder")));
+      container.innerHTML = '';
+      listaUsuariosLocais = [];
+      if (snap.empty) { container.innerHTML = '<p style="color:var(--muted);padding:1rem">Nenhum breeder cadastrado.</p>'; return; }
+      snap.forEach(d => {
+        const u = d.data();
+        listaUsuariosLocais.push({ uid: d.id, ...u });
+        const inicial = (u.name||'B').charAt(0).toUpperCase();
+        const avatar  = u.photo
+          ? `<img class="user-avatar" src="${u.photo}" alt="">`
+          : `<div class="user-avatar" style="background:#333;color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:700;font-size:1.2rem">${inicial}</div>`;
+        const div = document.createElement('div');
+        div.className = 'user-item';
+        div.innerHTML = `${avatar}
+          <div class="user-info"><h4>${u.name||'Sem Nome'}</h4><p>${u.email}</p></div>
+          <div class="user-controls">
+            <button class="btn-action btn-edit"   onclick="window.abrirModalBreeder('${d.id}')">Editar</button>
+            <button class="btn-action btn-delete" onclick="window.deletarBreeder('${d.id}')">Excluir</button>
+          </div>`;
+        container.appendChild(div);
+      });
+    } catch (e) { container.innerHTML = `<p style="color:var(--red);padding:1rem">${e.message}</p>`; }
+  };
+ 
+  window.abrirModalBreeder = (uid) => {
+    const u = listaUsuariosLocais.find(u => u.uid === uid) || {};
+    document.getElementById('edit-uid').value   = uid;
+    document.getElementById('edit-name').value  = u.name  || '';
+    document.getElementById('edit-email').value = u.email || '';
+    document.getElementById('edit-photo').value = u.photo || '';
+    document.getElementById('edit-user-modal').classList.add('open');
+  };
+ 
+  window.salvarEdicaoUsuario = async (e) => {
+    e.preventDefault();
+    const uid = document.getElementById('edit-uid').value;
+    try {
+      await setDoc(doc(db, "users", uid), {
+        name:  document.getElementById('edit-name').value.trim(),
+        email: document.getElementById('edit-email').value.trim(),
+        photo: document.getElementById('edit-photo').value.trim()
+      }, { merge: true });
+      fecharModal('edit-user-modal');
+      window.carregarTodosBreeders();
+    } catch (e) { alert("Erro: " + e.message); }
+  };
+ 
+  window.deletarBreeder = async (uid) => {
+    if (!confirm("Remover este breeder?")) return;
+    try {
+      await updateDoc(doc(db, "users", uid), { desativado: true });
+      await deleteDoc(doc(db, "users", uid));
+      window.carregarTodosBreeders();
+    } catch (e) { alert("Erro: " + e.message); }
+  };
+ 
+  // ── VENDEDORES ────────────────────────────────────────────
+  window.adicionarVendedorNovo = async (e) => {
+    e.preventDefault();
+    const nome  = document.getElementById('new-vendedor-name').value.trim();
+    const email = document.getElementById('new-vendedor-email').value.trim();
+    const senhaPadrao = "Pheno2026!";
+    try {
+      const { initializeApp, getApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+      const { getAuth, createUserWithEmailAndPassword, signOut, signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+      let secondaryApp;
+      try { secondaryApp = getApp("SecondaryRegisterApp"); }
+      catch (_) { secondaryApp = initializeApp(firebaseConfig, "SecondaryRegisterApp"); }
+      const secondaryAuth = getAuth(secondaryApp);
+      try {
+        const cred = await createUserWithEmailAndPassword(secondaryAuth, email, senhaPadrao);
+        const uid  = cred.user.uid;
+        await signOut(secondaryAuth);
+        await setDoc(doc(db, "users", uid), { uid, name: nome, email, role: 'vendedor', desativado: false });
+        alert(`Vendedor cadastrado!\nLogin: ${email}\nSenha: ${senhaPadrao}`);
+      } catch (err) {
+        if (err.code === 'auth/email-already-in-use') {
+          const cred = await signInWithEmailAndPassword(secondaryAuth, email, senhaPadrao);
+          const uid  = cred.user.uid;
+          await signOut(secondaryAuth);
+          const userDoc = await getDoc(doc(db, "users", uid));
+          if (userDoc.exists() && userDoc.data().role === 'breeder') {
+            await updateDoc(doc(db, "users", uid), { roles: ['breeder','vendedor'] });
+            alert("Email já é Breeder. Acesso de Vendedor adicionado!");
+          } else {
+            await setDoc(doc(db, "users", uid), { uid, name: nome, email, role: 'vendedor', desativado: false });
+            alert(`Vendedor reativado!\nLogin: ${email}\nSenha: ${senhaPadrao}`);
+          }
+        } else throw err;
+      }
+      e.target.reset();
+      togglePanel('panel-vendedor');
+      window.carregarTodosVendedores();
+    } catch (err) { alert("Erro: " + err.message); }
+  };
+ 
+  window.carregarTodosVendedores = async () => {
+    const container = document.getElementById('master-vendedores-list');
+    try {
+      const [s1, s2] = await Promise.all([
+        getDocs(query(collection(db, "users"), where("role",  "==", "vendedor"))),
+        getDocs(query(collection(db, "users"), where("roles", "array-contains", "vendedor")))
+      ]);
+      const mapa = {};
+      [...s1.docs, ...s2.docs].forEach(d => { mapa[d.id] = { uid: d.id, ...d.data() }; });
+      const lista = Object.values(mapa);
+      listaVendedoresLocais = lista;
+      container.innerHTML = '';
+      if (!lista.length) { container.innerHTML = '<p style="color:var(--muted);padding:1rem">Nenhum vendedor cadastrado.</p>'; return; }
+      lista.forEach(u => {
+        const isDual  = u.roles?.includes('breeder') && u.roles?.includes('vendedor');
+        const inicial = (u.name||'V').charAt(0).toUpperCase();
+        const avatar  = u.photo
+          ? `<img class="user-avatar" src="${u.photo}" alt="">`
+          : `<div class="user-avatar" style="background:#333;color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:700;font-size:1.2rem">${inicial}</div>`;
+        const div = document.createElement('div');
+        div.className = 'user-item';
+        div.innerHTML = `${avatar}
+          <div class="user-info">
+            <h4>${u.name||'Sem Nome'} ${isDual?'<span style="font-size:0.65rem;background:#1a1a2e;color:var(--gold);padding:0.1rem 0.4rem;border-radius:2px;border:1px solid var(--gold)">B+V</span>':''}</h4>
+            <p>${u.email}</p>
+          </div>
+          <div class="user-controls">
+            <button class="btn-action btn-edit"   onclick="window.abrirModalVendedor('${u.uid}')">Editar</button>
+            <button class="btn-action btn-delete" onclick="window.deletarVendedor('${u.uid}')">Excluir</button>
+          </div>`;
+        container.appendChild(div);
+      });
+    } catch (e) { container.innerHTML = `<p style="color:var(--red);padding:1rem">${e.message}</p>`; }
+  };
+ 
+  window.abrirModalVendedor = (uid) => {
+    const u = listaVendedoresLocais.find(u => u.uid === uid) || {};
+    document.getElementById('edit-vendedor-uid').value   = uid;
+    document.getElementById('edit-vendedor-name').value  = u.name  || '';
+    document.getElementById('edit-vendedor-email').value = u.email || '';
+    document.getElementById('edit-vendedor-modal').classList.add('open');
+  };
+ 
+  window.salvarEdicaoVendedor = async (e) => {
+    e.preventDefault();
+    const uid = document.getElementById('edit-vendedor-uid').value;
+    try {
+      await setDoc(doc(db, "users", uid), {
+        name:  document.getElementById('edit-vendedor-name').value.trim(),
+        email: document.getElementById('edit-vendedor-email').value.trim()
+      }, { merge: true });
+      fecharModal('edit-vendedor-modal');
+      window.carregarTodosVendedores();
+    } catch (e) { alert("Erro: " + e.message); }
+  };
+ 
+  window.deletarVendedor = async (uid) => {
+    if (!confirm("Remover este vendedor?")) return;
+    try {
+      const userDoc = await getDoc(doc(db, "users", uid));
+      if (userDoc.exists() && userDoc.data().roles?.includes('breeder')) {
+        await updateDoc(doc(db, "users", uid), { roles: ['breeder'] });
+        alert("Acesso de vendedor removido. Continua como Breeder.");
+      } else {
+        await updateDoc(doc(db, "users", uid), { desativado: true });
+        await deleteDoc(doc(db, "users", uid));
+        alert("Vendedor removido!");
+      }
+      window.carregarTodosVendedores();
+      window.carregarTodosBreeders();
+    } catch (e) { alert("Erro: " + e.message); }
+  };
+</script>
+</body>
+</html>
+ 

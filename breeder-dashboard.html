@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Breeder – PhenoBrasil</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d0d; --bg2: #141414; --bg3: #1c1c1c;
+  --border: #2a2a2a; --gold: #c9a84c; --green: #3a7d44;
+  --green2: #4caf50; --white: #f0ede8; --muted: #888; --red: #e05252;
+}
+body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; }
+ 
+nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.nav-logo h2 { font-family: 'Barlow Condensed'; font-weight: 800; letter-spacing: 1px; }
+.nav-actions { display: flex; align-items: center; gap: 1rem; }
+.nav-link-btn { background: transparent; border: 1px solid var(--border); color: var(--white); padding: 0.5rem 1rem; cursor: pointer; font-family: 'Barlow Condensed'; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; font-size: 0.9rem; transition: all 0.2s; display: inline-flex; align-items: center; border-radius: 2px; }
+.nav-link-btn:hover { border-color: var(--gold); color: var(--gold); }
+.logout-btn { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 0.5rem 1rem; cursor: pointer; font-family: 'Barlow Condensed'; font-weight: 700; text-transform: uppercase; transition: all 0.2s; border-radius: 2px; }
+.logout-btn:hover { background: var(--red); color: #fff; }
+ 
+.dashboard-container { max-width: 1100px; margin: 3rem auto; padding: 0 2rem; }
+ 
+/* BOTÃO NOVA STRAIN */
+.nova-strain-bar { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
+.nova-strain-btn { background: var(--green); color: #fff; border: none; padding: 0.7rem 1.5rem; font-family: 'Barlow Condensed'; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+.nova-strain-btn:hover { background: var(--green2); }
+ 
+/* SEÇÃO RETRAÍDA */
+.section-collapsible { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 1.5rem; overflow: hidden; }
+.section-toggle { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; cursor: pointer; user-select: none; transition: background 0.2s; }
+.section-toggle:hover { background: var(--bg3); }
+.section-toggle h3 { font-family: 'Barlow Condensed'; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--gold); margin: 0; }
+.section-toggle-right { display: flex; align-items: center; gap: 1rem; }
+.section-count { font-size: 0.8rem; color: var(--muted); font-family: 'Barlow Condensed'; }
+.toggle-arrow { color: var(--muted); font-size: 0.75rem; transition: transform 0.2s; }
+.section-collapsible.open .toggle-arrow { transform: rotate(180deg); }
+.section-body { display: none; border-top: 1px solid var(--border); }
+.section-collapsible.open .section-body { display: block; }
+ 
+/* TOOLBAR DE BUSCA */
+.section-toolbar { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg3); }
+.search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 2px; padding: 0.4rem 0.8rem; flex: 1; }
+.search-wrap:focus-within { border-color: var(--gold); }
+.search-wrap input { background: none; border: none; color: var(--white); font-family: 'Barlow'; font-size: 0.9rem; outline: none; width: 100%; }
+.search-wrap span { color: var(--muted); font-size: 0.9rem; }
+ 
+/* PEDIDOS ACCORDION */
+.pedido-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 2px; margin-bottom: 0.6rem; overflow: hidden; }
+.pedido-header { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.2rem; cursor: pointer; gap: 1rem; }
+.pedido-header:hover { background: var(--bg2); }
+.pedido-header-left { display: flex; flex-direction: column; gap: 2px; }
+.pedido-id { font-family: 'Barlow Condensed'; font-size: 0.95rem; font-weight: 700; color: var(--white); }
+.pedido-data { font-size: 0.75rem; color: var(--muted); }
+.pedido-header-right { display: flex; align-items: center; gap: 0.8rem; flex-shrink: 0; }
+.pedido-total { font-family: 'Barlow Condensed'; font-size: 1rem; font-weight: 700; color: var(--gold); }
+.pedido-body { display: none; padding: 0.8rem 1.2rem; border-top: 1px solid var(--border); }
+.pedido-card.open .pedido-body { display: block; }
+.pedido-item-row { display: flex; align-items: center; gap: 0.8rem; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.pedido-item-row:last-child { border-bottom: none; }
+.pedido-item-img { width: 36px; height: 36px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border); flex-shrink: 0; }
+.badge-confirmado { background: #002a10; color: #00cc66; padding: 0.15rem 0.5rem; border-radius: 2px; font-family: 'Barlow Condensed'; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; }
+ 
+/* GRID */
+@media (max-width: 900px) { .dashboard-container { padding: 0 1rem; } }
+ 
+.card-box { background: var(--bg2); border: 1px solid var(--border); padding: 2rem; border-radius: 4px; border-top: 3px solid var(--gold); height: fit-content; }
+.card-box h3 { font-family: 'Barlow Condensed'; font-size: 1.6rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
+ 
+/* MODAL STRAIN */
+.modal-strain { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 2rem 1rem; }
+.modal-strain.visible { display: flex; }
+.modal-strain .card-box { max-width: 620px; width: 100%; position: relative; margin: auto; }
+ 
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; letter-spacing: 0.05em; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--white); padding: 0.75rem 1rem; font-family: 'Barlow', sans-serif; font-size: 0.9rem; outline: none; border-radius: 2px; }
+.form-group textarea { resize: vertical; min-height: 90px; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+ 
+.section-divider { font-family: 'Barlow Condensed'; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--gold); letter-spacing: 0.1em; margin: 1.5rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
+ 
+/* FOTOS MÚLTIPLAS */
+.fotos-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+.foto-item { display: flex; gap: 0.5rem; align-items: center; }
+.foto-item input { flex: 1; background: var(--bg3); border: 1px solid var(--border); color: var(--white); padding: 0.6rem 1rem; font-family: 'Barlow', sans-serif; font-size: 0.85rem; outline: none; border-radius: 2px; }
+.foto-item input:focus { border-color: var(--gold); }
+.foto-remove-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; transition: color 0.2s; flex-shrink: 0; }
+.foto-remove-btn:hover { color: var(--red); }
+.add-foto-btn { background: transparent; border: 1px dashed var(--border); color: var(--muted); padding: 0.5rem 1rem; font-family: 'Barlow Condensed'; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: all 0.2s; margin-top: 0.3rem; width: 100%; }
+.add-foto-btn:hover { border-color: var(--gold); color: var(--gold); }
+ 
+/* TAGS */
+.tag-input-wrap { display: flex; flex-wrap: wrap; gap: 0.4rem; background: var(--bg3); border: 1px solid var(--border); padding: 0.5rem; border-radius: 2px; min-height: 44px; align-items: center; cursor: text; }
+.tag-input-wrap:focus-within { border-color: var(--gold); }
+.tag { background: var(--bg2); border: 1px solid var(--border); color: var(--white); padding: 0.2rem 0.6rem; border-radius: 2px; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem; }
+.tag-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0; }
+.tag-remove:hover { color: var(--red); }
+.tag-input { background: none; border: none; color: var(--white); font-family: 'Barlow', sans-serif; font-size: 0.9rem; outline: none; min-width: 120px; flex: 1; padding: 0.1rem 0.2rem; }
+ 
+/* BOTÕES */
+.submit-btn { width: 100%; background: var(--green); color: #fff; border: none; padding: 0.9rem; font-family: 'Barlow Condensed'; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; border-radius: 2px; }
+.submit-btn:hover { background: var(--green2); }
+.cancel-btn { width: 100%; background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 0.6rem; font-family: 'Barlow Condensed'; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; cursor: pointer; margin-top: 0.5rem; border-radius: 2px; }
+ 
+/* LISTA */
+.product-item { background: var(--bg3); border: 1px solid var(--border); padding: 1rem; border-radius: 2px; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.product-info h4 { font-family: 'Barlow Condensed'; font-size: 1.15rem; font-weight: 700; text-transform: uppercase; }
+.product-info p { color: var(--muted); font-size: 0.85rem; }
+.product-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+.price-tag { color: var(--gold); font-weight: 700; font-family: 'Barlow Condensed'; font-size: 1.1rem; }
+.edit-btn { background: var(--gold); color: #000; border: none; padding: 0.3rem 0.8rem; font-family: 'Barlow Condensed'; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: opacity 0.2s; }
+.edit-btn:hover { opacity: 0.9; }
+.del-btn { background: transparent; color: var(--red); border: 1px solid var(--red); padding: 0.3rem 0.8rem; font-family: 'Barlow Condensed'; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+.del-btn:hover { background: var(--red); color: #fff; }
+.ver-btn { background: var(--bg2); color: var(--white); border: 1px solid var(--border); padding: 0.3rem 0.8rem; font-family: 'Barlow Condensed'; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+.ver-btn:hover { border-color: var(--gold); color: var(--gold); }
+ 
+/* UPLOAD FOTO */
+.foto-upload-item { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+.foto-upload-item .foto-preview { width: 48px; height: 48px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border); flex-shrink: 0; display: none; }
+.foto-upload-item .foto-preview.visible { display: block; }
+.foto-upload-label { flex: 1; background: var(--bg3); border: 1px dashed var(--border); color: var(--muted); padding: 0.55rem 1rem; font-family: 'Barlow Condensed'; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; cursor: pointer; border-radius: 2px; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+.foto-upload-label:hover { border-color: var(--gold); color: var(--gold); }
+.foto-upload-input { display: none; }
+ 
+/* SINO DE NOTIFICAÇÕES */
+.notif-wrap { position: relative; }
+.notif-btn { background: transparent; border: 1px solid var(--border); color: var(--white); width: 40px; height: 40px; border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s; position: relative; }
+.notif-btn:hover { border-color: var(--gold); color: var(--gold); }
+.notif-badge { position: absolute; top: -6px; right: -6px; background: var(--red); color: #fff; font-family: 'Barlow Condensed'; font-size: 0.62rem; font-weight: 800; width: 17px; height: 17px; border-radius: 50%; display: none; align-items: center; justify-content: center; }
+.notif-badge.visible { display: flex; }
+.notif-dropdown { position: absolute; top: calc(100% + 8px); right: 0; width: 320px; background: var(--bg2); border: 1px solid var(--border); border-top: 2px solid var(--gold); border-radius: 4px; z-index: 500; display: none; max-height: 420px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+.notif-dropdown.open { display: block; }
+.notif-header { padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.notif-header span { font-family: 'Barlow Condensed'; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--gold); }
+.notif-clear { background: none; border: none; color: var(--muted); font-size: 0.75rem; cursor: pointer; font-family: 'Barlow Condensed'; text-transform: uppercase; }
+.notif-clear:hover { color: var(--red); }
+.notif-date-label { padding: 0.4rem 1rem; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: var(--bg3); border-bottom: 1px solid var(--border); }
+.notif-item { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; display: flex; gap: 0.7rem; align-items: flex-start; }
+.notif-item:hover { background: var(--bg3); }
+.notif-item.unread { border-left: 3px solid var(--gold); }
+.notif-item.unread .notif-item-title { color: var(--white); }
+.notif-item-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
+.notif-item-title { font-family: 'Barlow Condensed'; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+.notif-item-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+.notif-empty { padding: 2rem 1rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+ 
+/* MODAL DETALHES PEDIDO */
+.modal-pedido-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1100; display: none; align-items: center; justify-content: center; padding: 1rem; }
+.modal-pedido-overlay.open { display: flex; }
+.modal-pedido { background: var(--bg2); border: 1px solid var(--border); border-top: 3px solid var(--gold); width: 100%; max-width: 560px; border-radius: 4px; max-height: 90vh; overflow-y: auto; position: relative; padding: 2rem; }
+.modal-pedido-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; }
+.modal-pedido h3 { font-family: 'Barlow Condensed'; font-size: 1.6rem; font-weight: 800; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; }
+.pedido-detail-section { margin-bottom: 1.2rem; }
+.pedido-detail-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.6rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
+.pedido-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; font-size: 0.88rem; }
+.pedido-detail-row span:first-child { color: var(--muted); }
+.pedido-detail-row span:last-child { font-weight: 600; color: var(--white); }
+.pedido-detail-item { display: flex; gap: 0.8rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.pedido-detail-item:last-child { border-bottom: none; }
+.pedido-detail-img { width: 44px; height: 44px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border); flex-shrink: 0; }
+.pedido-detail-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.pedido-detail-total span:first-child { font-family: 'Barlow Condensed'; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+.pedido-detail-total span:last-child { font-family: 'Barlow Condensed'; font-size: 1.6rem; font-weight: 800; color: var(--gold); }
+ 
+/* PERFIL UPLOAD */
+.perfil-foto-wrap { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.perfil-foto-preview { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); background: var(--bg3); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: var(--gold); overflow: hidden; }
+.perfil-foto-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+.perfil-foto-preview img.visible { display: block; }
+.perfil-foto-upload-label { flex: 1; background: var(--bg3); border: 1px dashed var(--border); color: var(--muted); padding: 0.6rem 1rem; font-family: 'Barlow Condensed'; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; cursor: pointer; border-radius: 2px; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+.perfil-foto-upload-label:hover { border-color: var(--gold); color: var(--gold); }
+</style>
+ 
+<!-- MODAL PERFIL -->
+<div id="modal-perfil" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center;">
+  <div class="card-box" style="max-width:780px; width:90%; position:relative; max-height:90vh; overflow-y:auto;">
+    <button onclick="window.fecharModalPerfil()" style="position:absolute;top:15px;right:15px;background:transparent;border:none;color:var(--white);font-size:1.5rem;cursor:pointer;">&times;</button>
+    <h3 style="color:var(--gold);margin-bottom:1.5rem;">Editar Perfil</h3>
+    <form id="form-perfil" onsubmit="window.salvarPerfil(event)" style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+ 
+    <!-- COLUNA ESQUERDA -->
+      <div>
+        <div class="section-divider">Informações</div>
+        <div class="form-group"><label>Nome</label><input type="text" id="perfil-nome"></div>
+        <div class="form-group">
+          <label>Foto de Perfil</label>
+          <div class="perfil-foto-wrap">
+            <div class="perfil-foto-preview" id="perfil-foto-preview">
+              🧑
+              <img id="perfil-foto-preview-img" src="" alt="">
+            </div>
+            <label class="perfil-foto-upload-label" for="perfil-foto-input">
+              📁 Escolher arquivo...
+              <span id="perfil-foto-nome" style="font-weight:400;text-transform:none;font-size:0.75rem;color:var(--muted)">nenhum arquivo</span>
+            </label>
+            <input type="file" id="perfil-foto-input" class="foto-upload-input" accept="image/*">
+          </div>
+        </div>
+        <div class="section-divider">Redes Sociais <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(adicione  HTTPS://   para funcionar)</span></div>
+        <div class="form-group"><label>Instagram</label><input type="url" id="perfil-instagram" placeholder="exemplo:   https://     instagram.com/seu_perfil"></div>
+        <div class="form-group"><label>Facebook</label><input type="url" id="perfil-facebook" placeholder="exemplo:   https://     facebook.com/seu_perfil"></div>
+        <div class="form-group"><label>Twitter / X</label><input type="url" id="perfil-twitter" placeholder="exemplo:   https://     x.com/seu_perfil"></div>
+        <div class="form-group"><label>YouTube</label><input type="url" id="perfil-youtube" placeholder="exemplo:   https://     youtube.com/@seu_canal"></div>
+      </div>
+      
+ 
+      <!-- COLUNA DIREITA -->
+      <div style="display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div class="section-divider">Sobre você</div>
+        <div class="form-group">
+          <label>Trajetória <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0" id="bio-count">(0/280)</span></label>
+          <textarea id="perfil-bio" maxlength="280" rows="5" placeholder="Conte sua história: quanto tempo cultiva, sua trajetória, suas genéticas favoritas..." oninput="document.getElementById('bio-count').textContent='('+this.value.length+'/280)'"></textarea>
+        </div>
+          <div class="section-divider">Alterar Senha <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(opcional)</span></div>
+          <div class="form-group"><label>Senha Atual</label><input type="password" id="current-pass" placeholder="Deixe em branco para não alterar"></div>
+          <div class="form-group"><label>Nova Senha</label><input type="password" id="new-pass"></div>
+          <div class="form-group"><label>Confirmar Nova Senha</label><input type="password" id="confirm-pass"></div>
+        </div>
+        <div>
+          <button type="submit" class="submit-btn" style="margin-top:10px;">Salvar Alterações</button>
+          <button type="button" class="cancel-btn" style="display:block;margin-top:8px;border-color:var(--red);color:var(--red);" onclick="window.fecharModalPerfil()">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<body>
+<nav>
+  <div class="nav-logo">
+    <h2>PAINEL DO <span style="color:var(--gold);">BREEDER</span></h2>
+  </div>
+  <div class="nav-actions">
+    <!-- SINO DE NOTIFICAÇÕES -->
+    <div class="notif-wrap" id="notif-wrap">
+      <button class="notif-btn" onclick="window.toggleNotif()" title="Notificações">
+        🔔
+        <span class="notif-badge" id="notif-badge"></span>
+      </button>
+      <div class="notif-dropdown" id="notif-dropdown">
+        <div class="notif-header">
+          <span>Notificações</span>
+          <button class="notif-clear" onclick="window.limparNotifs()">Limpar tudo</button>
+        </div>
+        <div id="notif-list"><div class="notif-empty">Nenhuma notificação.</div></div>
+      </div>
+    </div>
+    <a href="index.html" class="nav-link-btn">🏠 Página Inicial</a>
+    <button class="nav-link-btn" onclick="window.abrirModalPerfil()" style="border-color:var(--gold);color:var(--gold);">⚙️ Meu Perfil</button>
+    <button class="logout-btn" onclick="window.fazerLogout()">Sair</button>
+  </div>
+</nav>
+ 
+<div class="dashboard-container">
+ 
+  <!-- BOTÃO NOVA STRAIN -->
+  <div class="nova-strain-bar">
+    <button class="nova-strain-btn" onclick="window.abrirFormulario()">+ Nova Strain</button>
+  </div>
+ 
+  <!-- MINHAS GENÉTICAS (retraída) -->
+  <div class="section-collapsible open" id="sec-strains">
+    <div class="section-toggle" onclick="toggleSecBreeder('sec-strains')">
+      <h3>🌿 Minhas Genéticas</h3>
+      <div class="section-toggle-right">
+        <span class="section-count" id="count-strains"></span>
+        <span class="toggle-arrow">▼</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="section-toolbar">
+        <div class="search-wrap">
+          <span>🔍</span>
+          <input type="text" id="search-strains" placeholder="Buscar strain..." oninput="window.filtrarStrains()">
+        </div>
+      </div>
+      <div style="padding:1rem 1.5rem" id="products-list">
+        <p style="color:var(--muted)">Carregando...</p>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- PEDIDOS CONFIRMADOS (retraído) -->
+  <div class="section-collapsible" id="sec-pedidos-breeder">
+    <div class="section-toggle" onclick="toggleSecBreeder('sec-pedidos-breeder', true)">
+      <h3>📦 Meus Pedidos</h3>
+      <div class="section-toggle-right">
+        <span class="section-count" id="count-pedidos-breeder"></span>
+        <span class="toggle-arrow">▼</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="section-toolbar">
+        <div class="search-wrap">
+          <span>🔍</span>
+          <input type="text" id="search-pedidos-breeder" placeholder="Buscar por ID ou cliente..." oninput="window.filtrarPedidosBreeder()">
+        </div>
+      </div>
+      <div style="padding:1rem 1.5rem" id="pedidos-breeder-list">
+        <p style="color:var(--muted)">Abra a seção para carregar.</p>
+      </div>
+    </div>
+  </div>
+ 
+</div>
+ 
+<!-- MODAL STRAIN (Nova / Editar) -->
+<div id="modal-strain" class="modal-strain" onclick="if(event.target===this)window.fecharFormulario()">
+  <div class="card-box">
+    <button onclick="window.fecharFormulario()" style="position:absolute;top:15px;right:15px;background:transparent;border:none;color:var(--white);font-size:1.5rem;cursor:pointer;">&times;</button>
+    <h3 id="form-title" style="color:var(--gold);margin-bottom:15px;">Nova Strain</h3>
+    <form id="product-form" onsubmit="window.salvarProduto(event)">
+      <input type="hidden" id="prod-id">
+ 
+      <div class="section-divider">Informações Básicas</div>
+      <div class="form-group">
+        <label>Nome da Strain</label>
+        <input type="text" id="prod-name" placeholder="Ex: Tropicana Cookies" required>
+      </div>
+ 
+      <div class="form-row">
+        <div class="form-group">
+          <label>Genética</label>
+          <select id="prod-genetica">
+            <option value="Feminizada">Feminizada</option>
+            <option value="Regular">Regular</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fotoperiodismo</label>
+          <select id="prod-fotoperiodismo">
+            <option value="Fotoperiodo">Fotoperiodo</option>
+            <option value="Automática">Automática</option>
+            <option value="Fast Flower">Fast Flower</option>
+          </select>
+        </div>
+      </div>
+ 
+      <div class="form-row">
+        <div class="form-group">
+          <label>Floração</label>
+          <input type="text" id="prod-flow" placeholder="Ex: 8-9 Semanas" required>
+        </div>
+        <div class="form-group">
+          <label>Preço (R$)</label>
+          <input type="number" id="prod-price" placeholder="Ex: 150" required>
+        </div>
+      </div>
+ 
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estoque (unidades)</label>
+          <input type="number" id="prod-estoque" placeholder="Ex: 10" min="0">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="prod-status">
+            <option value="ativo">Ativo</option>
+            <option value="esgotado">Esgotado</option>
+            <option value="inativo">Inativo</option>
+          </select>
+        </div>
+      </div>
+ 
+      <!-- FOTOS MÚLTIPLAS -->
+      <div class="section-divider">Fotos</div>
+      <div class="fotos-wrap" id="fotos-wrap"></div>
+      <label class="add-foto-btn" style="cursor:pointer;display:block;text-align:center;" for="foto-upload-multi">
+        + Adicionar foto
+      </label>
+      <input type="file" id="foto-upload-multi" class="foto-upload-input" accept="image/*" multiple onchange="window.handleFotosUpload(this)">
+ 
+      <div class="section-divider">Genética & Potência</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Genitor Pai ♂</label>
+          <input type="text" id="prod-pai" placeholder="Ex: OG Kush">
+        </div>
+        <div class="form-group">
+          <label>Genitor Mãe ♀</label>
+          <input type="text" id="prod-mae" placeholder="Ex: Gelato">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>THC (%)</label>
+          <select id="prod-thc">
+            <option value="Baixo (1-7%)">Baixo (1-7%)</option>
+            <option value="Médio (8-15%)">Médio (8-15%)</option>
+            <option value="Alto (+16%)">Alto (+16%)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>CBD (%)</label>
+          <select id="prod-cbd">
+            <option value="Baixo (1-7%)">Baixo (1-7%)</option>
+            <option value="Médio (8-15%)">Médio (8-15%)</option>
+            <option value="Alto (+16%)">Alto (+16%)</option>
+          </select>
+        </div>
+      </div>
+ 
+      <div class="section-divider">Produção & Perfil</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Produção Indoor</label>
+          <input type="text" id="prod-indoor" placeholder="Ex: 500g/m²">
+        </div>
+        <div class="form-group">
+          <label>Produção Outdoor</label>
+          <input type="text" id="prod-outdoor" placeholder="Ex: 800g/planta">
+        </div>
+      </div>
+ 
+      <div class="form-group">
+        <label>Efeitos (Enter para adicionar)</label>
+        <div class="tag-input-wrap" id="wrap-efeitos" onclick="document.getElementById('input-efeitos').focus()">
+          <input class="tag-input" id="input-efeitos" placeholder="Ex: Relaxante...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Aromas (Enter para adicionar)</label>
+        <div class="tag-input-wrap" id="wrap-aromas" onclick="document.getElementById('input-aromas').focus()">
+          <input class="tag-input" id="input-aromas" placeholder="Ex: Cítrico...">
+        </div>
+      </div>
+ 
+      <div class="form-group">
+        <label>Descrição</label>
+        <textarea id="prod-desc" placeholder="Conte a história desta strain..."></textarea>
+      </div>
+ 
+      <button type="submit" class="submit-btn"><span id="btn-submit-text">Adicionar à Vitrine</span></button>
+      <button type="button" class="cancel-btn" onclick="window.fecharFormulario()">Cancelar</button>
+    </form>
+  </div>
+</div>
+</div>
+ 
+<!-- MODAL DETALHES DO PEDIDO -->
+<div class="modal-pedido-overlay" id="modal-pedido-overlay" onclick="if(event.target===this)window.fecharModalPedido()">
+  <div class="modal-pedido" id="modal-pedido-content">
+    <button class="modal-pedido-close" onclick="window.fecharModalPedido()">&times;</button>
+    <h3>📦 Detalhes do Pedido</h3>
+    <div id="modal-pedido-body"></div>
+  </div>
+</div>
+ 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signOut, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, where, getDocs, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+ 
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJTlL-4piG67VOM_y480dhyib2qaF3Bso",
+    authDomain: "phenobrasil.firebaseapp.com",
+    projectId: "phenobrasil",
+    storageBucket: "phenobrasil.firebasestorage.app",
+    messagingSenderId: "825755980394",
+    appId: "1:825755980394:web:caad888821d128fb133013"
+  };
+ 
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+ 
+  let usuarioAtual     = null;
+  let produtosLocais   = [];
+  let executandoLogout = false;
+  let tagsEfeitos      = [];
+  let tagsAromas       = [];
+  let fotosUrls        = []; // array de URLs de fotos
+ 
+  // ── FORMULÁRIO VISIBILIDADE ───────────────────────────────
+  window.abrirFormulario = () => {
+    window.cancelarEdicao();
+    document.getElementById('modal-strain').classList.add('visible');
+  };
+ 
+ 
+  window.fecharFormulario = () => {
+    window.cancelarEdicao();
+    document.getElementById('modal-strain').classList.remove('visible');
+  };
+ 
+  // ── FOTOS MÚLTIPLAS (upload) ─────────────────────────────
+  const toBase64 = file => new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = e => res(e.target.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+ 
+  window.handleFotosUpload = async (input) => {
+    const files = Array.from(input.files);
+    for (const file of files) {
+      if (file.size > 2 * 1024 * 1024) { alert(`Arquivo "${file.name}" ultrapassa 2MB. Redimensione antes.`); continue; }
+      const b64 = await toBase64(file);
+      fotosUrls.push(b64);
+    }
+    input.value = '';
+    renderFotos();
+  };
+ 
+  const renderFotos = () => {
+    const wrap = document.getElementById('fotos-wrap');
+    wrap.innerHTML = '';
+    fotosUrls.forEach((url, i) => {
+      const div = document.createElement('div');
+      div.className = 'foto-upload-item';
+      div.innerHTML = `
+        <img class="foto-preview ${url ? 'visible' : ''}" src="${url}" alt="">
+        <span class="foto-upload-label" style="cursor:default;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+          ${url.startsWith('data:') ? '📷 Foto ' + (i+1) : url.length > 40 ? url.slice(0,40)+'…' : url}
+        </span>
+        <button type="button" class="foto-remove-btn" onclick="window.removerFoto(${i})">×</button>`;
+      wrap.appendChild(div);
+    });
+  };
+ 
+  window.removerFoto = (i) => { fotosUrls.splice(i, 1); renderFotos(); };
+ 
+  // ── TAGS ─────────────────────────────────────────────────
+  const setupTagInput = (inputId, wrapId, arr) => {
+    const input = document.getElementById(inputId);
+    input.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ',') && input.value.trim()) {
+        e.preventDefault();
+        const val = input.value.trim().replace(/,/g, '');
+        if (val && !arr.includes(val)) { arr.push(val); renderTags(wrapId, inputId, arr); }
+        input.value = '';
+      }
+      if (e.key === 'Backspace' && !input.value && arr.length) { arr.pop(); renderTags(wrapId, inputId, arr); }
+    });
+  };
+ 
+  const renderTags = (wrapId, inputId, arr) => {
+    const wrap  = document.getElementById(wrapId);
+    const input = document.getElementById(inputId);
+    wrap.innerHTML = '';
+    arr.forEach((t, i) => {
+      const span = document.createElement('span');
+      span.className = 'tag';
+      span.innerHTML = `${t}<button class="tag-remove" type="button">&times;</button>`;
+      span.querySelector('button').onclick = () => { arr.splice(i, 1); renderTags(wrapId, inputId, arr); };
+      wrap.appendChild(span);
+    });
+    wrap.appendChild(input);
+  };
+ 
+  const loadTags = (arr, values) => { arr.length = 0; (values || []).forEach(v => arr.push(v)); };
+ 
+  setupTagInput('input-efeitos', 'wrap-efeitos', tagsEfeitos);
+  setupTagInput('input-aromas',  'wrap-aromas',  tagsAromas);
+ 
+  // ── AUTH ─────────────────────────────────────────────────
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+  try {
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    const role = userDoc.exists() ? userDoc.data()?.role : null;
+    if (!userDoc.exists() || userDoc.data().desativado === true || role !== 'breeder') {
+      await signOut(auth); alert("❌ Acesso restrito a Breeders.❌"); location.href = 'index.html'; return;
+    }
+  } catch(e) { console.error(e); }
+  usuarioAtual = user;
+  window.carregarProdutosDoBreeder();
+} else {
+  if (!executandoLogout) location.href = 'index.html';
+}
+  });
+ 
+  // ── SALVAR PRODUTO ────────────────────────────────────────
+  window.salvarProduto = async (e) => {
+    e.preventDefault();
+    if (!usuarioAtual) return;
+    const btn = document.getElementById('btn-submit-text');
+    const id  = document.getElementById('prod-id').value;
+ 
+    // Monta o campo type combinando genética + fotoperiodismo
+    const genetica      = document.getElementById('prod-genetica').value;
+    const fotoperiodismo = document.getElementById('prod-fotoperiodismo').value;
+    const type = fotoperiodismo === 'Automática' ? 'Automática'
+               : fotoperiodismo === 'Fast Flower' ? 'Fast Version'
+               : genetica; // Feminizada ou Regular
+ 
+    const dados = {
+      name:          document.getElementById('prod-name').value.trim(),
+      type,
+      genetica,
+      fotoperiodismo,
+      flow:          document.getElementById('prod-flow').value.trim(),
+      price:         parseFloat(document.getElementById('prod-price').value),
+      estoque:       parseInt(document.getElementById('prod-estoque').value) || 0,
+      status:        document.getElementById('prod-status').value,
+      image:         fotosUrls[0] || '',
+      images:        [...fotosUrls],
+      pai:           document.getElementById('prod-pai').value.trim(),
+      mae:           document.getElementById('prod-mae').value.trim(),
+      thc:           document.getElementById('prod-thc').value,
+      cbd:           document.getElementById('prod-cbd').value,
+      indoor:        document.getElementById('prod-indoor').value.trim(),
+      outdoor:       document.getElementById('prod-outdoor').value.trim(),
+      efeitos:       [...tagsEfeitos],
+      aromas:        [...tagsAromas],
+      descricao:     document.getElementById('prod-desc').value.trim(),
+      breederUid:    usuarioAtual.uid,
+      breederEmail:  usuarioAtual.email,
+    };
+ 
+    try {
+      btn.textContent = 'Salvando...'; btn.disabled = true;
+      if (id) {
+        await updateDoc(doc(db, "products", id), dados);
+      } else {
+        dados.createdAt = serverTimestamp();
+        await addDoc(collection(db, "products"), dados);
+      }
+      window.fecharFormulario();
+      await window.carregarProdutosDoBreeder();
+      alert(id ? '✅ Strain atualizada!' : '✅ Strain adicionada à vitrine!');
+    } catch (err) {
+      alert('Erro ao salvar: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = id ? 'Salvar Alterações' : 'Adicionar à Vitrine';
+    }
+  };
+ 
+  // ── CARREGAR LISTA ────────────────────────────────────────
+  window.carregarProdutosDoBreeder = async () => {
+    if (!usuarioAtual) return;
+    const container = document.getElementById('products-list');
+    try {
+      const q    = query(collection(db, "products"), where("breederUid", "==", usuarioAtual.uid));
+      const snap = await getDocs(q);
+      container.innerHTML = '';
+      produtosLocais = [];
+      if (snap.empty) { container.innerHTML = '<p style="color:var(--muted)">Nenhuma strain cadastrada.</p>'; return; }
+      snap.forEach(docSnap => {
+        const item = docSnap.data();
+        produtosLocais.push({ id: docSnap.id, ...item });
+        const div = document.createElement('div');
+        div.className = 'product-item';
+        div.innerHTML = `
+          <div class="product-info">
+            <h4>${item.name}</h4>
+            <p>${item.type} • ${item.flow}${item.thc ? ' • THC ' + item.thc : ''} • Estoque: <strong style="color:${item.estoque === 0 ? 'var(--red)' : 'var(--green2)'}">${item.estoque !== undefined ? item.estoque : '—'}</strong></p>
+          </div>
+          <div class="product-meta">
+            <span class="price-tag">R$ ${item.price.toFixed(2)}</span>
+            <div style="display:flex;gap:0.4rem">
+              <button class="edit-btn" onclick="window.prepararEdicao('${docSnap.id}')">Editar</button>
+              <button class="del-btn"  onclick="window.excluirProduto('${docSnap.id}', '${(item.name||'').replace(/'/g,"\\'")}')">Excluir</button>
+            </div>
+          </div>`;
+        container.appendChild(div);
+      });
+      // Inicia listener de notificações após ter os IDs dos produtos
+      if (window._fsModules && usuarioAtual) iniciarListenerPedidos();
+    } catch (e) { container.innerHTML = '<p style="color:var(--red)">Erro ao buscar dados.</p>'; }
+  };
+ 
+  // ── EDITAR ────────────────────────────────────────────────
+  window.prepararEdicao = (id) => {
+    const item = produtosLocais.find(p => p.id === id);
+    if (!item) return;
+ 
+    document.getElementById('prod-id').value           = id;
+    document.getElementById('prod-name').value         = item.name    || '';
+    document.getElementById('prod-genetica').value     = item.genetica || 'Feminizada';
+    document.getElementById('prod-fotoperiodismo').value = item.fotoperiodismo || 'Fotoperiodo';
+    document.getElementById('prod-flow').value         = item.flow    || '';
+    document.getElementById('prod-price').value        = item.price   || '';
+    document.getElementById('prod-estoque').value      = item.estoque !== undefined ? item.estoque : '';
+    document.getElementById('prod-status').value       = item.status  || 'ativo';
+    document.getElementById('prod-pai').value          = item.pai     || '';
+    document.getElementById('prod-mae').value          = item.mae     || '';
+    document.getElementById('prod-thc').value          = item.thc     || 'Baixo (1-7%)';
+    document.getElementById('prod-cbd').value          = item.cbd     || 'Baixo (1-7%)';
+    document.getElementById('prod-indoor').value       = item.indoor  || '';
+    document.getElementById('prod-outdoor').value      = item.outdoor || '';
+    document.getElementById('prod-desc').value         = item.descricao || '';
+ 
+    // Fotos
+    fotosUrls = item.images?.length ? [...item.images] : (item.image ? [item.image] : []);
+    renderFotos();
+ 
+    loadTags(tagsEfeitos, item.efeitos);
+    loadTags(tagsAromas,  item.aromas);
+    renderTags('wrap-efeitos', 'input-efeitos', tagsEfeitos);
+    renderTags('wrap-aromas',  'input-aromas',  tagsAromas);
+ 
+    document.getElementById('form-title').textContent      = 'Editando Strain';
+    document.getElementById('btn-submit-text').textContent = 'Salvar Alterações';
+    document.getElementById('modal-strain').classList.add('visible');
+  };
+ 
+  window.cancelarEdicao = () => {
+    document.getElementById('product-form').reset();
+    document.getElementById('prod-id').value = '';
+    tagsEfeitos.length = 0; tagsAromas.length = 0;
+    fotosUrls = [];
+    renderTags('wrap-efeitos', 'input-efeitos', tagsEfeitos);
+    renderTags('wrap-aromas',  'input-aromas',  tagsAromas);
+    renderFotos();
+    document.getElementById('form-title').textContent      = 'Nova Strain';
+    document.getElementById('btn-submit-text').textContent = 'Adicionar à Vitrine';
+  };
+ 
+  // ── EXCLUIR ───────────────────────────────────────────────
+  window.excluirProduto = async (id, nome) => {
+    if (!confirm(`Excluir "${nome}"?\n\nEssa ação não pode ser desfeita.`)) return;
+    try {
+      await deleteDoc(doc(db, "products", id));
+      await window.carregarProdutosDoBreeder();
+    } catch (err) { alert('Erro ao excluir: ' + err.message); }
+  };
+ 
+  // ── PERFIL ────────────────────────────────────────────────
+  window.abrirModalPerfil = async () => {
+    document.getElementById('modal-perfil').style.display = 'flex';
+    try {
+      const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+      if (userDoc.exists()) {
+        const d = userDoc.data();
+        document.getElementById('perfil-nome').value      = d.name      || '';
+        // Preview da foto atual
+        if (d.photo) {
+          const img = document.getElementById('perfil-foto-preview-img');
+          img.src = d.photo; img.classList.add('visible');
+          document.getElementById('perfil-foto-preview').querySelector(':not(img)') && 
+            (document.getElementById('perfil-foto-preview').firstChild.textContent = '');
+          document.getElementById('perfil-foto-nome').textContent = 'foto atual';
+        }
+        document.getElementById('perfil-instagram').value = d.instagram || '';
+        document.getElementById('perfil-facebook').value  = d.facebook  || '';
+        document.getElementById('perfil-twitter').value   = d.twitter   || '';
+        document.getElementById('perfil-youtube').value   = d.youtube   || '';
+        const bioEl = document.getElementById('perfil-bio');
+        bioEl.value = d.bio || '';
+        document.getElementById('bio-count').textContent = `(${bioEl.value.length}/280)`;
+      }
+    } catch(_) {}
+  };
+ 
+  window.fecharModalPerfil = () => {
+    document.getElementById('modal-perfil').style.display = 'none';
+    document.getElementById('form-perfil').reset();
+    document.getElementById('bio-count').textContent = '(0/280)';
+  };
+ 
+  // Listener upload foto perfil
+  document.getElementById('perfil-foto-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('Imagem ultrapassa 2MB.'); return; }
+    const b64 = await toBase64(file);
+    const img = document.getElementById('perfil-foto-preview-img');
+    img.src = b64; img.classList.add('visible');
+    document.getElementById('perfil-foto-nome').textContent = file.name;
+    document.getElementById('perfil-foto-input').dataset.base64 = b64;
+  });
+ 
+  window.salvarPerfil = async (e) => {
+    e.preventDefault();
+    const user        = auth.currentUser;
+    const currentPass = document.getElementById('current-pass').value;
+    const newPass     = document.getElementById('new-pass').value;
+    const confirmPass = document.getElementById('confirm-pass').value;
+    const novaFoto    = document.getElementById('perfil-foto-input').dataset.base64 ||
+                        document.getElementById('perfil-foto-preview-img').src || '';
+    try {
+      await setDoc(doc(db, "users", user.uid), {
+        name:      document.getElementById('perfil-nome').value,
+        photo:     novaFoto,
+        instagram: document.getElementById('perfil-instagram').value.trim(),
+        facebook:  document.getElementById('perfil-facebook').value.trim(),
+        twitter:   document.getElementById('perfil-twitter').value.trim(),
+        youtube:   document.getElementById('perfil-youtube').value.trim(),
+        bio:       document.getElementById('perfil-bio').value.trim().slice(0, 280),
+      }, { merge: true });
+ 
+      if (currentPass || newPass || confirmPass) {
+        if (!currentPass || !newPass || !confirmPass) { alert("Para trocar a senha, preencha todos os 3 campos."); return; }
+        if (newPass !== confirmPass) { alert("As senhas novas não coincidem!"); return; }
+        if (newPass.length < 6) { alert("A nova senha deve ter pelo menos 6 caracteres."); return; }
+        const cred = EmailAuthProvider.credential(user.email, currentPass);
+        await reauthenticateWithCredential(user, cred);
+        await updatePassword(user, newPass);
+        alert("Perfil e senha atualizados!");
+      } else {
+        alert("Perfil atualizado!");
+      }
+      window.fecharModalPerfil();
+    } catch (err) {
+      if (err.code === 'auth/wrong-password') alert("Senha atual incorreta.");
+      else alert("Erro: " + err.message);
+    }
+  };
+ 
+  // ── TOGGLE SEÇÕES ─────────────────────────────────────────
+  let pedidosCarregados = false;
+  window.toggleSecBreeder = (id, carregarPedidos = false) => {
+    document.getElementById(id)?.classList.toggle('open');
+    if (carregarPedidos && !pedidosCarregados && document.getElementById(id).classList.contains('open')) {
+      pedidosCarregados = true;
+      window.carregarPedidosBreeder();
+    }
+  };
+ 
+  // ── FILTRO STRAINS ────────────────────────────────────────
+  window.filtrarStrains = () => {
+    const busca = document.getElementById('search-strains').value.toLowerCase();
+    document.querySelectorAll('#products-list .product-item').forEach(item => {
+      item.style.display = item.textContent.toLowerCase().includes(busca) ? '' : 'none';
+    });
+  };
+ 
+  // ── PEDIDOS DO BREEDER ────────────────────────────────────
+  let todosPedidosBreeder = [];
+ 
+  window.carregarPedidosBreeder = async () => {
+    const container = document.getElementById('pedidos-breeder-list');
+    container.innerHTML = '<p style="color:var(--muted)">Carregando...</p>';
+    try {
+      const { getDocs: gd, collection: col, query: q, where: w } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+ 
+      // Busca IDs das strains do breeder
+      const strainIds = produtosLocais.map(p => p.id);
+      if (!strainIds.length) {
+        container.innerHTML = '<p style="color:var(--muted)">Nenhuma strain cadastrada.</p>';
+        return;
+      }
+ 
+      // Busca pedidos confirmados
+      const snap = await gd(q(col(db, 'pedidos'), w('status', '==', 'confirmado')));
+      todosPedidosBreeder = [];
+ 
+      snap.forEach(d => {
+        const pedido = { id: d.id, ...d.data() };
+        // Filtra itens que pertencem a este breeder
+        const itensMeus = (pedido.itens || []).filter(i => strainIds.includes(i.id));
+        if (itensMeus.length) todosPedidosBreeder.push({ ...pedido, itensMeus });
+      });
+ 
+      todosPedidosBreeder.sort((a, b) => {
+        const ta = a.criadoEm?.toDate?.() || new Date(0);
+        const tb = b.criadoEm?.toDate?.() || new Date(0);
+        return tb - ta;
+      });
+ 
+      document.getElementById('count-pedidos-breeder').textContent = `${todosPedidosBreeder.length} pedido${todosPedidosBreeder.length !== 1 ? 's' : ''}`;
+      window.renderPedidosBreeder(todosPedidosBreeder);
+    } catch(e) {
+      console.error(e);
+      container.innerHTML = `<p style="color:var(--red)">Erro ao carregar pedidos: ${e.message}</p>`;
+    }
+  };
+ 
+  window.renderPedidosBreeder = (lista) => {
+    const container = document.getElementById('pedidos-breeder-list');
+    if (!lista.length) { container.innerHTML = '<p style="color:var(--muted)">Nenhum pedido confirmado encontrado.</p>'; return; }
+    container.innerHTML = '';
+    lista.forEach(p => {
+      const data = p.criadoEm?.toDate ? p.criadoEm.toDate().toLocaleDateString('pt-BR') : '—';
+      const totalMeu = p.itensMeus.reduce((s, i) => s + (i.price * i.qty), 0);
+      const itensHtml = p.itensMeus.map(i => `
+        <div class="pedido-item-row">
+          ${i.image ? `<img src="${i.image}" class="pedido-item-img" alt="">` : ''}
+          <div>
+            <div style="font-weight:600;color:var(--white)">${i.name}</div>
+            <div style="font-size:0.78rem;color:var(--muted)">${i.qty}x · R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}</div>
+          </div>
+        </div>`).join('');
+ 
+      const card = document.createElement('div');
+      card.className = 'pedido-card';
+      card.id = `pb-${p.id}`;
+      card.innerHTML = `
+        <div class="pedido-header" onclick="document.getElementById('pb-${p.id}').classList.toggle('open')">
+          <div class="pedido-header-left">
+            <span class="pedido-id">#${p.id.slice(-6).toUpperCase()}</span>
+            <span class="pedido-data">${data} · ${p.userEmail || '—'}</span>
+          </div>
+          <div class="pedido-header-right">
+            <span class="pedido-total">R$ ${totalMeu.toFixed(2).replace('.', ',')}</span>
+            <span class="badge-confirmado">✅ Confirmado</span>
+            <button class="ver-btn" onclick="event.stopPropagation();window.abrirModalPedido('${p.id}')">Ver</button>
+          </div>
+        </div>
+        <div class="pedido-body">${itensHtml}</div>`;
+      container.appendChild(card);
+    });
+  };
+ 
+  window.filtrarPedidosBreeder = () => {
+    const busca = document.getElementById('search-pedidos-breeder').value.toLowerCase();
+    const filtrados = todosPedidosBreeder.filter(p =>
+      p.id.toLowerCase().includes(busca) || (p.userEmail||'').toLowerCase().includes(busca)
+    );
+    window.renderPedidosBreeder(filtrados);
+  };
+ 
+  window.fazerLogout = async () => {
+    try { executandoLogout = true; await signOut(auth); location.href = 'index.html'; }
+    catch (e) { executandoLogout = false; alert(e.message); }
+  };
+ 
+  // ── MODAL DETALHES PEDIDO ─────────────────────────────────
+  window.abrirModalPedido = (id) => {
+    const p = todosPedidosBreeder.find(p => p.id === id);
+    if (!p) return;
+    const data     = p.criadoEm?.toDate ? p.criadoEm.toDate().toLocaleString('pt-BR') : '—';
+    const end      = p.endereco || {};
+    const endStr   = [end.rua, end.numero, end.complemento, end.bairro, end.cidade, end.estado, end.cep]
+                      .filter(Boolean).join(', ') || 'Não informado';
+    const totalMeu = p.itensMeus.reduce((s, i) => s + (i.price * i.qty), 0);
+ 
+    const itensHtml = p.itensMeus.map(i => `
+      <div class="pedido-detail-item">
+        ${i.image ? `<img class="pedido-detail-img" src="${i.image}" alt="">` : ''}
+        <div style="flex:1">
+          <div style="font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase">${i.name}</div>
+          <div style="font-size:0.78rem;color:var(--muted)">${i.qty}x · R$ ${(i.price).toFixed(2).replace('.',',')} cada</div>
+        </div>
+        <div style="font-family:'Barlow Condensed';font-weight:700;color:var(--gold)">R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}</div>
+      </div>`).join('');
+ 
+    document.getElementById('modal-pedido-body').innerHTML = `
+      <div class="pedido-detail-section">
+        <div class="pedido-detail-label">Informações do Pedido</div>
+        <div class="pedido-detail-row"><span>ID</span><span>#${p.id.slice(-6).toUpperCase()}</span></div>
+        <div class="pedido-detail-row"><span>Data</span><span>${data}</span></div>
+        <div class="pedido-detail-row"><span>Status</span><span style="color:var(--green2)">✅ Confirmado</span></div>
+        <div class="pedido-detail-row"><span>Cliente</span><span>${p.userEmail || '—'}</span></div>
+      </div>
+      <div class="pedido-detail-section">
+        <div class="pedido-detail-label">Endereço de Entrega</div>
+        <div style="font-size:0.88rem;color:var(--white);line-height:1.6">${endStr}</div>
+      </div>
+      <div class="pedido-detail-section">
+        <div class="pedido-detail-label">Itens do Pedido</div>
+        ${itensHtml}
+        <div class="pedido-detail-total">
+          <span>Total (meus itens)</span>
+          <span>R$ ${totalMeu.toFixed(2).replace('.',',')}</span>
+        </div>
+      </div>`;
+ 
+    document.getElementById('modal-pedido-overlay').classList.add('open');
+  };
+ 
+  window.fecharModalPedido = () => {
+    document.getElementById('modal-pedido-overlay').classList.remove('open');
+  };
+ 
+  // ── SINO DE NOTIFICAÇÕES ──────────────────────────────────
+  const NOTIF_KEY = `notifs_breeder_${location.hostname}`;
+  let notificacoes = JSON.parse(localStorage.getItem(NOTIF_KEY) || '[]');
+ 
+  const salvarNotifs = () => localStorage.setItem(NOTIF_KEY, JSON.stringify(notificacoes));
+ 
+  const atualizarBadge = () => {
+    const naoLidas = notificacoes.filter(n => !n.lida).length;
+    const badge = document.getElementById('notif-badge');
+    badge.textContent = naoLidas > 9 ? '9+' : naoLidas;
+    badge.classList.toggle('visible', naoLidas > 0);
+  };
+ 
+  const renderNotifs = () => {
+    const list = document.getElementById('notif-list');
+    if (!notificacoes.length) {
+      list.innerHTML = '<div class="notif-empty">Nenhuma notificação.</div>';
+      return;
+    }
+    // Agrupa por data
+    const grupos = {};
+    notificacoes.slice().reverse().forEach(n => {
+      const d = new Date(n.timestamp);
+      const label = d.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long' });
+      if (!grupos[label]) grupos[label] = [];
+      grupos[label].push(n);
+    });
+    list.innerHTML = Object.entries(grupos).map(([label, items]) => `
+      <div class="notif-date-label">${label}</div>
+      ${items.map(n => `
+        <div class="notif-item ${n.lida ? '' : 'unread'}" onclick="window.marcarLida('${n.id}')">
+          <span class="notif-item-icon">📦</span>
+          <div>
+            <div class="notif-item-title">${n.titulo}</div>
+            <div class="notif-item-sub">${new Date(n.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})} · ${n.sub}</div>
+          </div>
+        </div>`).join('')}
+    `).join('');
+    atualizarBadge();
+  };
+ 
+  window.toggleNotif = () => {
+    const dd = document.getElementById('notif-dropdown');
+    dd.classList.toggle('open');
+    if (dd.classList.contains('open')) renderNotifs();
+  };
+ 
+  window.marcarLida = (id) => {
+    const n = notificacoes.find(n => n.id === id);
+    if (n) { n.lida = true; salvarNotifs(); renderNotifs(); }
+  };
+ 
+  window.limparNotifs = () => {
+    notificacoes = [];
+    salvarNotifs();
+    renderNotifs();
+  };
+ 
+  // Fecha dropdown ao clicar fora
+  document.addEventListener('click', (e) => {
+    if (!document.getElementById('notif-wrap').contains(e.target)) {
+      document.getElementById('notif-dropdown').classList.remove('open');
+    }
+  });
+ 
+  // Escuta pedidos confirmados em tempo real
+  const iniciarListenerPedidos = () => {
+    const { onSnapshot, query: q, collection: col, where: w } =
+      window._fsModules || {};
+    if (!onSnapshot) return;
+ 
+    const jaVistosKey = `notifs_vistos_${usuarioAtual?.uid}`;
+    const jaVistos    = new Set(JSON.parse(localStorage.getItem(jaVistosKey) || '[]'));
+ 
+    q(col(db, 'pedidos'), w('status', '==', 'confirmado'));
+    onSnapshot(
+      q(col(db, 'pedidos'), w('status', '==', 'confirmado')),
+      (snap) => {
+        snap.docChanges().forEach(change => {
+          if (change.type !== 'added') return;
+          const pedido = { id: change.doc.id, ...change.doc.data() };
+          if (jaVistos.has(pedido.id)) return;
+ 
+          // Verifica se tem itens do breeder
+          const strainIds = produtosLocais.map(p => p.id);
+          const itensMeus = (pedido.itens || []).filter(i => strainIds.includes(i.id));
+          if (!itensMeus.length) return;
+ 
+          jaVistos.add(pedido.id);
+          localStorage.setItem(jaVistosKey, JSON.stringify([...jaVistos]));
+ 
+          notificacoes.push({
+            id:        pedido.id + '_' + Date.now(),
+            titulo:    `Novo Pedido #${pedido.id.slice(-6).toUpperCase()}`,
+            sub:       `${itensMeus.length} item(s) · R$ ${itensMeus.reduce((s,i)=>s+(i.price*i.qty),0).toFixed(2).replace('.',',')}`,
+            timestamp: Date.now(),
+            lida:      false,
+          });
+          salvarNotifs();
+          atualizarBadge();
+        });
+      }
+    );
+  };
+ 
+  // Importa onSnapshot — listener iniciado após produtos carregados
+  import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(m => {
+    window._fsModules = m;
+  });
+ 
+  // Atualiza badge ao carregar notifs existentes
+  atualizarBadge();
+</script>
+</body>
+</html>
+  
